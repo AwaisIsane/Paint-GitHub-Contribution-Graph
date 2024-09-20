@@ -29,6 +29,10 @@ impl<'a> GraphGrid<'a> {
     fn graph_color_red(&self) -> Color {
         Color::Rgb(128, 0, 0)
     }
+
+    fn graph_color_yellow(&self) -> Color {
+        Color::Rgb(255, 255, 0)
+    }
 }
 
 impl<'a> Widget for GraphGrid<'a> {
@@ -48,23 +52,27 @@ impl<'a> Widget for GraphGrid<'a> {
 
         let hor_pad = (area.width - rw) / 2; //to centre
         let ver_pad = (area.height - rh) / 2;
-        let pos_x = self.app.pos / 7;
-        let pos_y = self.app.pos % 7;
+
         for y in 0..days {
             for x in 0..weeks {
+                let index = x * 7 + y;
+                if index > self.app.no_of_days - 1 {
+                    break;
+                }
                 let render_x = area.left() + hor_pad + x as u16 * 2 + 1;
                 let render_y = area.top() + ver_pad + y as u16;
-                let style = if x == pos_x && y == pos_y {
+                let style = if index == self.app.pos {
                     Style::default()
-                        .fg(self.graph_color_green())
+                        .fg(self.graph_color_yellow())
                         .add_modifier(Modifier::SLOW_BLINK)
+                } else if self.app.commits[index] > 0 {
+                    Style::default().fg(self.graph_color_green())
                 } else {
                     Style::default().fg(self.graph_color_red())
                 };
+
                 buf.set_string(render_x, render_y, "■", style);
             }
         }
     }
 }
-
-//"■"

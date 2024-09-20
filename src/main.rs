@@ -56,22 +56,22 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             match app.current_screen {
                 CurrentScreen::Main => match key.code {
                     KeyCode::Char('w') | KeyCode::Up => {
-                        app.add_commits();
                         app.move_up();
+                        app.add_commits();
                     }
                     KeyCode::Char('a') | KeyCode::Left => {
-                        app.add_commits();
                         app.move_left();
+                        app.add_commits();
                     }
                     KeyCode::Char('s') | KeyCode::Down => {
-                        app.add_commits();
                         app.move_down();
+                        app.add_commits();
                     }
                     KeyCode::Char('d') | KeyCode::Right => {
-                        app.add_commits();
                         app.move_right();
+                        app.add_commits();
                     }
-                    KeyCode::Esc => {
+                    KeyCode::Esc | KeyCode::Char('q') => {
                         app.current_screen = CurrentScreen::Exiting;
                         return Ok(true); //for now
                     }
@@ -80,9 +80,11 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     }
                     KeyCode::Char('k') => {
                         app.decrease_no_of_commits();
+                        app.add_commits();
                     }
                     KeyCode::Char('l') => {
                         app.increase_no_of_commits();
+                        app.add_commits();
                     }
                     _ => {}
                 },
