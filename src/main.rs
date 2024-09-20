@@ -1,10 +1,11 @@
 use app::CurrentScreen;
+use chrono::{Duration, NaiveDate};
 use ratatui::{
     backend::Backend,
     crossterm::event::{self, Event, KeyCode},
     Terminal,
 };
-use std::env;
+use std::{env, fs, path::Path, process::Command};
 use std::{error::Error, io};
 
 mod app;
@@ -29,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Ok(result) = res {
         if result == true {
-            print!("added commit ")
+            return create_commits(app.commits, app.start_date);
         }
     } else if let Err(err) = res {
         println!("{err:?}");
@@ -95,4 +96,51 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             }
         }
     }
+}
+
+fn create_commits(commits: Vec<i32>, start_date: NaiveDate) -> Result<(), Box<dyn Error>> {
+    let dir_path = Path::new("git_history");
+
+    if dir_path.exists() {
+        fs::remove_dir_all(dir_path)?;
+    }
+
+    fs::create_dir(dir_path)?;
+
+    std::env::set_current_dir(dir_path)?;
+
+    Command::new("git")
+        .arg("init")
+        .output()
+        .expect("Failed to initialize git repository");
+
+    for day in 0..commits.len() {
+        for i in 0..commits[day] {
+            let date_str = start_date + Duration::days(day as i64);
+            let date_str = date_str.to_string();
+            let mssg = format!("{},{}", i, date_str);
+
+            fs::write("files.txt", mssg)?;
+
+            Command::new("git")
+                .args(&["add", "files.txt"])
+                .output()
+                .expect("Failed to add file to git");
+
+            Command::new("git")
+                .args(&[
+                    "commit",
+                    "--quiet",
+                    "--date",
+                    &date_str,
+                    "-m",
+                    "Fake commit",
+                ])
+                .output()
+                .expect("Failed to commit changes");
+        }
+    }
+    println!("Committed changes");
+
+    Ok(())
 }

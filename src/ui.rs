@@ -83,10 +83,16 @@ fn footer_info(app: &App) -> Paragraph<'_> {
     let current_keys_info = {
         match app.current_screen {
             CurrentScreen::Main => {
+                let edit_st = if app.is_editing {
+                    ""
+                } else {
+                    "you are not adding commits press e to start"
+                };
                 let content_hint = format!(
-                    "commits-{} date  {}",
+                    "commits {} on date {} {}",
                     app.commits[app.pos],
-                    format_date(app.start_date, app.pos as i64)
+                    format_date(app.start_date, app.pos as i64),
+                    edit_st
                 );
                 Span::styled(content_hint, Style::default().fg(Color::Red))
             }
