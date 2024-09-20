@@ -1,13 +1,7 @@
 use app::CurrentScreen;
-use chrono::Datelike;
-use chrono::{Days, Local, NaiveDate};
 use ratatui::{
-    backend::{Backend, CrosstermBackend},
-    crossterm::{
-        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
-        execute,
-        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    },
+    backend::Backend,
+    crossterm::event::{self, Event, KeyCode},
     Terminal,
 };
 use std::env;
@@ -22,24 +16,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     let year = args.get(1).map(String::as_str).unwrap_or("default_value");
     // setup terminal
-    enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
+
+    let mut terminal = ratatui::init();
+    terminal.clear()?;
 
     // create app and run it
     let mut app = App::new(year);
     let res = run_app(&mut terminal, &mut app);
 
     // restore terminal
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
+    ratatui::restore();
 
     if let Ok(result) = res {
         if result == true {

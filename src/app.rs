@@ -27,7 +27,7 @@ impl App {
         } else {
             let year = year.parse::<i32>().unwrap();
             let mut dt = NaiveDate::from_ymd_opt(year, 1, 1).unwrap();
-            if (dt.leap_year() && dt.weekday() == Weekday::Sat) {
+            if dt.leap_year() && dt.weekday() == Weekday::Sat {
                 dt = NaiveDate::from_ymd_opt(year, 1, 1).unwrap(); //case where there are 54 weeks in github graph github removes the 1 saturday eg year 2000
             }
             dt
