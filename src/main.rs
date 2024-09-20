@@ -1,6 +1,6 @@
-use std::{error::Error, io};
-
 use app::CurrentScreen;
+use chrono::Datelike;
+use chrono::{Days, Local, NaiveDate};
 use ratatui::{
     backend::{Backend, CrosstermBackend},
     crossterm::{
@@ -10,6 +10,8 @@ use ratatui::{
     },
     Terminal,
 };
+use std::env;
+use std::{error::Error, io};
 
 mod app;
 mod graph;
@@ -17,6 +19,8 @@ mod ui;
 use crate::{app::App, ui::ui};
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = env::args().collect();
+    let year = args.get(1).map(String::as_str).unwrap_or("default_value");
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -25,7 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let mut app = App::new();
+    let mut app = App::new(year);
     let res = run_app(&mut terminal, &mut app);
 
     // restore terminal
@@ -38,7 +42,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal.show_cursor()?;
 
     if let Ok(result) = res {
-        println!("{result:?}");
+        if result == true {
+            print!("added commit ")
+        }
     } else if let Err(err) = res {
         println!("{err:?}");
     }
@@ -71,12 +77,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         app.move_right();
                         app.add_commits();
                     }
-                    KeyCode::Esc | KeyCode::Char('q') => {
+                    KeyCode::Esc | KeyCode::Char('q') | KeyCode::Enter => {
                         app.current_screen = CurrentScreen::Exiting;
-                        return Ok(true); //for now
                     }
                     KeyCode::Char('e') => {
                         app.toggle_editing();
+                        app.add_commits();
                     }
                     KeyCode::Char('k') => {
                         app.decrease_no_of_commits();
@@ -92,8 +98,11 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     KeyCode::Char('y') => {
                         return Ok(true);
                     }
-                    KeyCode::Char('n') | KeyCode::Char('q') => {
+                    KeyCode::Char('n') => {
                         return Ok(false);
+                    }
+                    KeyCode::Backspace => {
+                        app.current_screen = CurrentScreen::Main;
                     }
                     _ => {}
                 },

@@ -6,7 +6,7 @@ use ratatui::{
 };
 
 use crate::app::App;
-
+use chrono::Datelike;
 pub struct GraphGrid<'a> {
     app: &'a App,
 }
@@ -37,10 +37,8 @@ impl<'a> GraphGrid<'a> {
 
 impl<'a> Widget for GraphGrid<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let weeks = 53;
-        let days = 7;
         let (rw, rh) = self.render_dims();
-        if rw > area.width || rh > area.height {
+        if rw > area.width {
             buf.set_string(
                 area.left(),
                 area.top(),
@@ -50,27 +48,37 @@ impl<'a> Widget for GraphGrid<'a> {
             return;
         }
 
+        if rh > area.height {
+            buf.set_string(
+                area.left(),
+                area.top(),
+                "increase terminal height ",
+                Style::default().fg(Color::Red),
+            );
+            return;
+        }
+
         let hor_pad = (area.width - rw) / 2; //to centre
         let ver_pad = (area.height - rh) / 2;
+        let skip = self.app.start_date.weekday().num_days_from_sunday() as usize;
 
-        for y in 0..days {
-            for x in 0..weeks {
-                let index = x * 7 + y;
-                if index > self.app.no_of_days - 1 {
-                    break;
-                }
-                let render_x = area.left() + hor_pad + x as u16 * 2 + 1;
-                let render_y = area.top() + ver_pad + y as u16;
-                let style = if index == self.app.pos {
+        for days in 0..self.app.no_of_days + skip {
+            let x = days / 7;
+            let y = days % 7;
+
+            let render_x = area.left() + hor_pad + x as u16 * 2 + 1;
+            let render_y = area.top() + ver_pad + y as u16;
+            if days >= skip {
+                let actual_day = days - skip;
+                let style = if actual_day == self.app.pos {
                     Style::default()
                         .fg(self.graph_color_yellow())
                         .add_modifier(Modifier::SLOW_BLINK)
-                } else if self.app.commits[index] > 0 {
+                } else if self.app.commits[actual_day] > 0 {
                     Style::default().fg(self.graph_color_green())
                 } else {
                     Style::default().fg(self.graph_color_red())
                 };
-
                 buf.set_string(render_x, render_y, "■", style);
             }
         }
