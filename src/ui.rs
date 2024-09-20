@@ -13,7 +13,7 @@ pub fn ui(frame: &mut Frame, app: &App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3),
-            Constraint::Length(20),
+            Constraint::Length(7),
             Constraint::Min(0),
         ])
         .split(frame.area());
@@ -29,6 +29,6 @@ pub fn ui(frame: &mut Frame, app: &App) {
     .block(title_block);
     //Row::new(Cell::)
     frame.render_widget(title, chunks[0]);
-    frame.render_widget(GraphGrid, chunks[1]);
+    frame.render_widget(GraphGrid::new(app), chunks[1]);
     // render_canvas(frame, chunks[1]);
 }

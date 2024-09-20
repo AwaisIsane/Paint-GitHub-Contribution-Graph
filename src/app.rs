@@ -15,10 +15,12 @@ pub struct App {
 impl App {
     pub fn new() -> Self {
         let current_local: DateTime<Local> = Local::now();
-        let current_commit_size = 52 * 7 + current_local.ordinal() % 7;
+        // let current_commit_size = 52 * 7 + current_local.ordinal() % 7;
+        let current_commit_size = 53 * 7;
+
         return App {
             pos: 0,
-            commits: vec![0, current_commit_size as i32], //52 weeks + till current day of week
+            commits: vec![0; current_commit_size], //52 weeks + till current day of week
             no_of_commits: 0,
             current_screen: CurrentScreen::Main,
             is_editing: true,
@@ -37,7 +39,7 @@ impl App {
 
     pub fn add_commits(&mut self) {
         if self.is_editing {
-            self.commits[self.pos] = self.no_of_commits;
+            self.commits[self.pos as usize] = self.no_of_commits;
         }
     }
 
@@ -52,9 +54,13 @@ impl App {
         self.pos = std::cmp::min(self.commits.len() - 1, self.pos + 1);
     }
     pub fn move_left(&mut self) {
-        self.pos = std::cmp::max(0, self.pos - 7);
+        self.pos = self.pos.checked_sub(7).unwrap_or(self.pos + 52 * 7);
     }
     pub fn move_right(&mut self) {
-        self.pos = std::cmp::min(self.commits.len() - 1, self.pos + 7);
+        if (self.pos + 7) > (53 * 7 - 1) {
+            self.pos = self.pos % 7;
+        } else {
+            self.pos = self.pos + 7
+        }
     }
 }
