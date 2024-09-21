@@ -101,18 +101,17 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
 fn create_commits(commits: Vec<i32>, start_date: NaiveDate) -> Result<(), Box<dyn Error>> {
     let dir_path = Path::new("git_history");
 
-    if dir_path.exists() {
-        fs::remove_dir_all(dir_path)?;
+    if !dir_path.exists() {
+        fs::create_dir(dir_path)?;
     }
 
-    fs::create_dir(dir_path)?;
-
     std::env::set_current_dir(dir_path)?;
-
-    Command::new("git")
-        .arg("init")
-        .output()
-        .expect("Failed to initialize git repository");
+    if !Path::new(".git").exists() {
+        Command::new("git")
+            .arg("init")
+            .output()
+            .expect("Failed to initialize git repository");
+    }
 
     for day in 0..commits.len() {
         for i in 0..commits[day] {

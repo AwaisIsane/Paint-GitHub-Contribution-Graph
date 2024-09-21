@@ -39,10 +39,7 @@ pub fn ui(frame: &mut Frame, app: &App) {
 
     if let CurrentScreen::Exiting = app.current_screen {
         frame.render_widget(Clear, frame.area()); //this clears the entire screen and anything already drawn
-        let popup_block = Block::default()
-            .title("Y/N")
-            .borders(Borders::NONE)
-            .style(Style::default().bg(Color::DarkGray));
+        let popup_block = Block::default().title("Y/N").borders(Borders::NONE);
 
         let exit_text = Text::styled(
             "Would you like to add-commits (y) exit (n) go-back (backspace)",
